@@ -7,6 +7,9 @@
 import logging
 import ask_sdk_core.utils as ask_utils
 
+import datetime 
+import calendar 
+
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
@@ -16,6 +19,25 @@ from ask_sdk_model import Response
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+#date to day of the week 
+def findDay(date): 
+    born = datetime.datetime.strptime(date, '%d %m %Y').weekday() 
+    return (calendar.day_name[born]) 
+  
+date = "dd mm yyyy"
+print(findDay(date)) 
+
+response = requests.get('http://44.232.86.238/dining/menu/detailedMenu')
+json_response=response.json()
+
+
+
+
+
+
+
+
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -45,7 +67,7 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Hello World!"
+        speak_output = json_response['menus'][0]
 
         return (
             handler_input.response_builder
@@ -53,6 +75,7 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
                 # .ask("add a reprompt if you want to keep the session open for the user to respond")
                 .response
         )
+
 
 
 class HelpIntentHandler(AbstractRequestHandler):
