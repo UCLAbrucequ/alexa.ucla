@@ -8,6 +8,7 @@
 import logging
 import json
 import requests
+import decimal
 #import commands
 #from commands import getstatusoutput
 
@@ -22,6 +23,36 @@ from ask_sdk_model import Response
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+locations = {
+    "De Neve": ["Flex Bar", "The Front Burner", "The Kitchen", "The Pizzeria", "The Grill"],
+    "Covel": ["Exhibition Kitchen","Euro Kitchen", "Pizza Oven", "Grill"],
+    "Bruin Plate": ["Freshly Bowled","Harvest","Stone Oven","Simply Grilled"]
+}
+
+def avg_nutrition(json_response, dining_hall, nutrition_type):
+    total = 0
+    count = 0
+    truncate=2
+    divisor=1000
+    if nutrition_type!="Sodium":
+        truncate=1
+        divisor=1
+    for sublocation in locations[dining_hall]:
+        for meal in json_response['menus'][0]['overviewMenu']['dinner'][dining_hall][sublocation]:
+            total += float(meal['nutrition'][nutrition_type][0][:-truncate]) / divisor
+            count += 1
+    
+    return total / count
+
+def all_avg(nutrition_type):
+    response = requests.get('http://44.232.86.238/dining/menu/overviewMenu')
+    json_response= response.json();
+    avg_sodium=[0.0,0.0,0.0]
+    avg_sodium[0] = avg_nutrition(json_response, "Covel", nutrition_type)
+    avg_sodium[1] = avg_nutrition(json_response, "De Neve", nutrition_type)
+    avg_sodium[2] = avg_nutrition(json_response, "Bruin Plate", nutrition_type)
+    return avg_sodium
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -43,121 +74,58 @@ class LaunchRequestHandler(AbstractRequestHandler):
         )
 
 
-class HelloWorldIntentHandler(AbstractRequestHandler):
+class SugarIntentHandler(AbstractRequestHandler):
     """Handler for Hello World Intent."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("HelloWorldIntent")(handler_input)
+        return ask_utils.is_intent_name("SugarIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         #speak_output = "Hello World test!"
-        response = requests.get('http://44.232.86.238/dining/menu/overviewMenu')
-        json_response= response.json();
-        """
-        dining_halls=["Covel","De Neve","Bruin Plate"]
-        covel_locations=["Exhibition Kitchen","Euro Kitchen", "Pizza Oven", "Grill"]
-        deNeve_locations=["Flex Bar", "The Front Burner", "The Kitchen", "The Pizzeria", "The Grill"]
-        bplate_locations=["Freshly Bowled","Harvest","Stone Oven","Simply Grilled"]
-        dining_hall_locations=[covel_locations,deNeve_locations,bplate_locations]
-        meal_time=["dinner"]
-        """
-        avg_sugar=[0.0,0.0,0.0]
-        
-        #covel
-        covel_count=0
+        avg_sugar=all_avg("Sugars")
+        speak_output= "Covel: "+str(round(avg_sugar[0],1))+ ". De Neve: "+str(round(avg_sugar[1],1))+" . Bruin Plate: "+str(round(avg_sugar[2],1))
 
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Exhibition Kitchen'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Exhibition Kitchen'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[0]+=sugar
-            covel_count+=1
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Euro Kitchen'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Euro Kitchen'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[0]+=sugar
-            covel_count+=1
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Pizza Oven'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Pizza Oven'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[0]+=sugar
-            covel_count+=1
 
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Grill'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Grill'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[0]+=sugar
-            covel_count+=1
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                # .ask("add a reprompt if you want to keep the session open for the user to respond")
+                .response
+        )
 
-        avg_sugar[0]= avg_sugar[0]/covel_count
-        
-        
-        
-        
-        deNeve_count=0
-        
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['Flex Bar'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['Flex Bar'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[1]+=sugar
-            deNeve_count+=1
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Front Burner'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Front Burner'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[1]+=sugar
-            deNeve_count+=1
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Kitchen'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Kitchen'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[1]+=sugar
-            deNeve_count+=1
+class CarbIntentHandler(AbstractRequestHandler):
+    """Handler for Hello World Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("CarbIntent")(handler_input)
 
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Pizzeria'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Pizzeria'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[1]+=sugar
-            deNeve_count+=1
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        #speak_output = "Hello World test!"
+        avg_carbs=all_avg("Total_Carbohydrate")
+        speak_output= "Covel: "+str(round(avg_carbs[0],1))+ ". De Neve: "+str(round(avg_carbs[1],1))+" . Bruin Plate: "+str(round(avg_carbs[2],1))
 
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Grill'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Grill'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[1]+=sugar
-            deNeve_count+=1
-            
-        avg_sugar[1]= avg_sugar[1]/deNeve_count
-        
-        #bplate
-        bplate_count=0
 
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Freshly Bowled'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Freshly Bowled'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[2]+=sugar
-            bplate_count+=1
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Harvest'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Harvest'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[2]+=sugar
-            bplate_count+=1
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Stone Oven'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Stone Oven'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[2]+=sugar
-            bplate_count+=1
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                # .ask("add a reprompt if you want to keep the session open for the user to respond")
+                .response
+        )
 
-        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Simply Grilled'])):
-            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Simply Grilled'][i]['nutrition']['Sugars'][0][:-1])
-            avg_sugar[2]+=sugar
-            bplate_count+=1
 
-        avg_sugar[2]= avg_sugar[2]/bplate_count
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-                #deNeve
-        #for i in ("Flex Bar", "The Front Burner", "The Kitchen", "The Pizzeria", "The Grill"):
-         #   for j in json_response['menus'][0]['detailedMenu']['dinner']["De Neve"][locals()[i]]:
-          #      avg_sugar[1]+=json_response['menus'][0]['detailedMenu']['dinner']["De Neve"][locals()[i]][locals()[j]]['nutrition']['Sugars']
-        
-        speak_output= json_response["menus"][0]["menuDate"]
-        speak_output= str(avg_sugar[0])+ " "+str(avg_sugar[1])+" "+str(avg_sugar[2])
+class SodiumIntentHandler(AbstractRequestHandler):
+    """Handler for Hello World Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("SodiumIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        #speak_output = "Hello World test!"
+        avg_sodium=all_avg("Sodium")
+        speak_output= "Covel: "+str(round(avg_sodium[0],1))+ ". De Neve: "+str(round(avg_sodium[1],1))+" . Bruin Plate: "+str(round(avg_sodium[2],1))
 
 
         return (
@@ -271,7 +239,10 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 sb = SkillBuilder()
 
 sb.add_request_handler(LaunchRequestHandler())
-sb.add_request_handler(HelloWorldIntentHandler())
+sb.add_request_handler(SugarIntentHandler())
+sb.add_request_handler(SodiumIntentHandler())
+sb.add_request_handler(CarbIntentHandler())
+
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
