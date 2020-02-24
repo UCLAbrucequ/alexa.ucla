@@ -4,7 +4,13 @@
 # Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
+#import request
 import logging
+import json
+import requests
+#import commands
+#from commands import getstatusoutput
+
 import ask_sdk_core.utils as ask_utils
 
 from ask_sdk_core.skill_builder import SkillBuilder
@@ -45,7 +51,114 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Hello World!"
+        #speak_output = "Hello World test!"
+        response = requests.get('http://44.232.86.238/dining/menu/overviewMenu')
+        json_response= response.json();
+        """
+        dining_halls=["Covel","De Neve","Bruin Plate"]
+        covel_locations=["Exhibition Kitchen","Euro Kitchen", "Pizza Oven", "Grill"]
+        deNeve_locations=["Flex Bar", "The Front Burner", "The Kitchen", "The Pizzeria", "The Grill"]
+        bplate_locations=["Freshly Bowled","Harvest","Stone Oven","Simply Grilled"]
+        dining_hall_locations=[covel_locations,deNeve_locations,bplate_locations]
+        meal_time=["dinner"]
+        """
+        avg_sugar=[0.0,0.0,0.0]
+        
+        #covel
+        covel_count=0
+
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Exhibition Kitchen'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Exhibition Kitchen'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[0]+=sugar
+            covel_count+=1
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Euro Kitchen'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Euro Kitchen'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[0]+=sugar
+            covel_count+=1
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Pizza Oven'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Pizza Oven'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[0]+=sugar
+            covel_count+=1
+
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Grill'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Covel"]['Grill'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[0]+=sugar
+            covel_count+=1
+
+        avg_sugar[0]= avg_sugar[0]/covel_count
+        
+        
+        
+        
+        deNeve_count=0
+        
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['Flex Bar'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['Flex Bar'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[1]+=sugar
+            deNeve_count+=1
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Front Burner'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Front Burner'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[1]+=sugar
+            deNeve_count+=1
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Kitchen'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Kitchen'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[1]+=sugar
+            deNeve_count+=1
+
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Pizzeria'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Pizzeria'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[1]+=sugar
+            deNeve_count+=1
+
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Grill'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["De Neve"]['The Grill'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[1]+=sugar
+            deNeve_count+=1
+            
+        avg_sugar[1]= avg_sugar[1]/deNeve_count
+        
+        #bplate
+        bplate_count=0
+
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Freshly Bowled'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Freshly Bowled'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[2]+=sugar
+            bplate_count+=1
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Harvest'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Harvest'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[2]+=sugar
+            bplate_count+=1
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Stone Oven'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Stone Oven'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[2]+=sugar
+            bplate_count+=1
+
+        for i in range(len(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Simply Grilled'])):
+            sugar = float(json_response['menus'][0]['overviewMenu']['dinner']["Bruin Plate"]['Simply Grilled'][i]['nutrition']['Sugars'][0][:-1])
+            avg_sugar[2]+=sugar
+            bplate_count+=1
+
+        avg_sugar[2]= avg_sugar[2]/bplate_count
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                #deNeve
+        #for i in ("Flex Bar", "The Front Burner", "The Kitchen", "The Pizzeria", "The Grill"):
+         #   for j in json_response['menus'][0]['detailedMenu']['dinner']["De Neve"][locals()[i]]:
+          #      avg_sugar[1]+=json_response['menus'][0]['detailedMenu']['dinner']["De Neve"][locals()[i]][locals()[j]]['nutrition']['Sugars']
+        
+        speak_output= json_response["menus"][0]["menuDate"]
+        speak_output= str(avg_sugar[0])+ " "+str(avg_sugar[1])+" "+str(avg_sugar[2])
+
 
         return (
             handler_input.response_builder
