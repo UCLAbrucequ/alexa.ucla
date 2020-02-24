@@ -9,6 +9,7 @@ import logging
 import json
 import requests
 import decimal
+import time
 #import commands
 #from commands import getstatusoutput
 
@@ -29,6 +30,16 @@ locations = {
     "Covel": ["Exhibition Kitchen","Euro Kitchen", "Pizza Oven", "Grill"],
     "Bruin Plate": ["Freshly Bowled","Harvest","Stone Oven","Simply Grilled"]
 }
+
+def read_Menu (dining_hall):
+    response = requests.get('http://44.232.86.238/dining/menu/overviewMenu')
+    json_response= response.json()
+    items = []
+    for sublocation in locations[dining_hall]:
+        for meal in json_response['menus'][0]['overviewMenu']['dinner'][dining_hall][sublocation]:
+            items.append(meal['name'])
+            
+    return (', '.join(items))
 
 def avg_nutrition(json_response, dining_hall, nutrition_type):
     total = 0
@@ -64,7 +75,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Welcome, you can say Hello or Help. Which would you like to try?"
+        speak_output = "Welcome, you can say ask about carbs, sodium,or sugar"
 
         return (
             handler_input.response_builder
@@ -73,6 +84,27 @@ class LaunchRequestHandler(AbstractRequestHandler):
                 .response
         )
 
+class NameIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("NameIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        response = requests.get('http://44.232.86.238/dining/menu/overviewMenu')
+        json_response= response.json()
+        
+        #const dininghall = handlerInput.requestEnvelope.request.intent.slots.dininghall
+        #dininghallName= dininghall.value
+        #dininghallName= "Covel"
+        
+        speak_output = ""+str(read_Menu("Covel"))
+        
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .response
+        )
 
 class SugarIntentHandler(AbstractRequestHandler):
     """Handler for Hello World Intent."""
@@ -242,6 +274,7 @@ sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(SugarIntentHandler())
 sb.add_request_handler(SodiumIntentHandler())
 sb.add_request_handler(CarbIntentHandler())
+sb.add_request_handler(NameIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
